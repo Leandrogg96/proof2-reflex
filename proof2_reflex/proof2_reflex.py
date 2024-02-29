@@ -1,45 +1,55 @@
 import reflex as rx
 
+from proof2_reflex import style
+from proof2_reflex.state import State
+
+
 def qa(question: str, answer: str) -> rx.Component:
     return rx.box(
-        rx.box(question, text_align="right"),
-        rx.box(answer, text_align="left"),
+        rx.box(
+            rx.text(question, text_align="right"),
+            style=style.question_style,
+        ),
+        rx.box(
+            rx.text(answer, text_align="left"),
+            style=style.answer_style,
+        ),
         margin_y="1em",
     )
 
 
-
 def chat() -> rx.Component:
-    qa_pairs = [
-        (
-            "What is Reflex?",
-            "A way to build web apps in pure Python!",
-        ),
-        (
-            "What can I make with it?",
-            "Anything from a simple website to a complex web app!",
-        ),
-    ]
     return rx.box(
-        *[
-            qa(question, answer)
-            for question, answer in qa_pairs
-        ]
+        rx.foreach(
+            State.chat_history,
+            lambda messages: qa(messages[0], messages[1]),
+        )
     )
+
 
 def action_bar() -> rx.Component:
     return rx.hstack(
-        rx.chakra.input(placeholder="Ask a question"),
-        rx.button("Ask"),
+        rx.chakra.input(
+            value=State.question,
+            placeholder="Ask a question",
+            on_change=State.set_question,
+            style=style.input_style,
+        ),
+        rx.button(
+            "Ask",
+            on_click=State.answer,
+            style=style.button_style,
+        ),
     )
 
 
 def index() -> rx.Component:
     return rx.container(
-        chat(), 
-        action_bar()
+        chat(),
+        action_bar(),
     )
 
-# Add state and page to the app.
+
 app = rx.App()
 app.add_page(index)
+
